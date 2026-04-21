@@ -107,6 +107,7 @@ body {
 }
 
 .menu-action {
+  display: block;
   width: 100%;
   border: 2px solid rgba(255, 198, 61, 0.95);
   border-radius: 12px;
@@ -118,6 +119,11 @@ body {
   line-height: 1.3;
   padding: 10px 12px;
   cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.menu-link {
+  text-decoration: none;
 }
 
 .app-shell {
@@ -379,6 +385,111 @@ input[type="checkbox"] {
   background: linear-gradient(90deg, #6ae5ff, #8affc1);
 }
 
+.progress-shell {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 18px 40px;
+}
+
+.progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.back-link {
+  text-decoration: none;
+}
+
+.progress-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.chart-card,
+.log-card {
+  border-radius: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  background: var(--panel);
+  padding: 14px;
+}
+
+.chart-title {
+  margin: 0 0 10px;
+  font-family: "Bungee", sans-serif;
+  color: var(--sun);
+  font-size: 1rem;
+}
+
+.chart-canvas {
+  width: 100%;
+  height: 220px;
+  border-radius: 12px;
+  background: rgba(8, 5, 22, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.chart-legend {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.legend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  padding: 4px 8px;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.log-card {
+  margin-top: 14px;
+}
+
+.log-scroll {
+  overflow: auto;
+  max-height: 440px;
+}
+
+.log-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.log-table th,
+.log-table td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 0.92rem;
+}
+
+.log-table th {
+  position: sticky;
+  top: 0;
+  background: rgba(17, 11, 40, 0.95);
+  color: var(--sky);
+}
+
+.muted {
+  color: var(--muted);
+}
+
 #sparkCanvas {
   position: fixed;
   inset: 0;
@@ -406,5 +517,10 @@ input[type="checkbox"] {
   .menu-toggle {
     top: 12px;
     left: 12px;
+  }
+
+  .progress-header {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RoadTo-300 Progress</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bungee:wght@400&family=Nunito:wght@500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="background-glow" aria-hidden="true"></div>
+
+    <main class="progress-shell">
+      <header class="progress-header">
+        <div>
+          <p class="eyebrow">Andrea's 90-Day Challenge</p>
+          <h1>Progress</h1>
+          <p class="subtitle">Full log and trends across total and bucket scores.</p>
+        </div>
+        <a href="./index.html" class="ghost-button back-link">Back to Tracker</a>
+      </header>
+
+      <section class="progress-grid">
+        <article class="chart-card">
+          <h2 class="chart-title">Aggregated Daily Score Trend</h2>
+          <canvas id="totalTrendCanvas" class="chart-canvas" width="540" height="220"></canvas>
+          <div class="chart-legend" id="totalLegend"></div>
+        </article>
+
+        <article class="chart-card">
+          <h2 class="chart-title">Bucket Trend (Completion %)</h2>
+          <canvas id="bucketTrendCanvas" class="chart-canvas" width="540" height="220"></canvas>
+          <div class="chart-legend" id="bucketLegend"></div>
+        </article>
+      </section>
+
+      <section class="log-card">
+        <h2 class="chart-title">Full Day Log</h2>
+        <p class="muted" id="logMeta">Loading...</p>
+        <div class="log-scroll">
+          <table class="log-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Total (0-5)</th>
+                <th>Gym</th>
+                <th>Strain</th>
+                <th>Carb-Free</th>
+                <th>Supplements</th>
+              </tr>
+            </thead>
+            <tbody id="logTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="./progress.js"></script>
+  </body>
+</html>
