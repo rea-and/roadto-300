@@ -37,8 +37,51 @@ body {
     radial-gradient(circle at 78% 34%, rgba(127, 216, 255, 0.2), transparent 38%),
     radial-gradient(circle at 62% 70%, rgba(246, 199, 102, 0.12), transparent 36%);
   filter: blur(40px);
-  z-index: -2;
+  z-index: -3;
   animation: drift 10s ease-in-out infinite alternate;
+}
+
+.background-pattern {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    repeating-radial-gradient(
+      circle at 18% 34%,
+      rgba(247, 252, 255, 0.2) 0 1px,
+      transparent 1px 12px
+    ),
+    repeating-radial-gradient(
+      circle at 76% 66%,
+      rgba(127, 216, 255, 0.14) 0 1px,
+      transparent 1px 14px
+    ),
+    linear-gradient(170deg, transparent 62%, rgba(255, 255, 255, 0.11) 62% 64%, transparent 64%),
+    linear-gradient(188deg, transparent 66%, rgba(127, 216, 255, 0.12) 66% 68%, transparent 68%);
+  opacity: 0.5;
+}
+
+.background-pattern::before,
+.background-pattern::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='34' viewBox='0 0 160 34' fill='none' stroke='%23f7fcff' stroke-width='2'%3E%3Cpath d='M2 2h26v14H16v16h26V2h26v30h26V2h26v30h24'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 160px 34px;
+  opacity: 0.35;
+}
+
+.background-pattern::before {
+  top: 18px;
+}
+
+.background-pattern::after {
+  bottom: 14px;
+  transform: scaleY(-1);
 }
 
 @keyframes drift {
