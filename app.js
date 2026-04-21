@@ -1,7 +1,7 @@
 const STORAGE_KEY = "roadto300.daily.v1";
 const STORAGE_BACKUP_KEY = "roadto300.daily.v1.backup";
 const LEGACY_STORAGE_KEYS = ["trainiq.daily.v2", "trainiq.daily.v1"];
-const API_STATE_ENDPOINT = "api/state";
+const API_STATE_ENDPOINT = getStateEndpoint();
 const CHALLENGE_DAYS = 90;
 const CHALLENGE_TARGET_POINTS = 300;
 const MAX_DAILY_POINTS = 5;
@@ -65,6 +65,7 @@ const menuToggleBtn = document.getElementById("menuToggle");
 const appMenu = document.getElementById("appMenu");
 const menuBackdrop = document.getElementById("menuBackdrop");
 const restartChallengeBtn = document.getElementById("restartChallenge");
+const backendStatusEl = document.getElementById("backendStatus");
 
 const defaultData = {
   gym: { target: 1, done: 0 },
@@ -457,17 +458,23 @@ function todayISO() {
 async function loadState() {
   try {
     const response = await fetch(API_STATE_ENDPOINT, { cache: "no-store" });
-    if (response.ok) {
-      const parsed = await response.json();
-      if (parsed && typeof parsed === "object" && parsed.days) {
-        return {
-          days: parsed.days,
-          challengeStart: parsed.challengeStart || firstTrackedDay(parsed.days) || todayISO(),
-        };
-      }
+    if (!response.ok) {
+      throw new Error(`Backend load failed with status ${response.status}`);
+    }
+
+    const parsed = await response.json();
+    if (parsed && typeof parsed === "object" && parsed.days) {
+      setBackendStatus("");
+      return {
+        days: parsed.days,
+        challengeStart: parsed.challengeStart || firstTrackedDay(parsed.days) || todayISO(),
+      };
     }
   } catch (err) {
     console.warn("Could not load state from backend, trying localStorage fallback.", err);
+    setBackendStatus(
+      "Cannot connect to backend. Progress may only be saved on this device until backend connection is restored."
+    );
   }
 
   const localState = loadLegacyLocalState();
@@ -516,8 +523,12 @@ async function persistState() {
     if (!response.ok) {
       throw new Error(`Backend save failed with status ${response.status}`);
     }
+    setBackendStatus("");
   } catch (err) {
     console.error("Could not persist tracker state to backend.", err);
+    setBackendStatus(
+      "Cannot save to backend right now. Changes are only stored locally on this device until connection is restored."
+    );
   }
 
   const localSnapshot = JSON.stringify(snapshot);
@@ -531,6 +542,35 @@ function firstTrackedDay(daysMap) {
   }
   const keys = Object.keys(daysMap).sort();
   return keys[0] || null;
+}
+
+function setBackendStatus(message) {
+  if (!backendStatusEl) {
+    return;
+  }
+  const text = (message || "").trim();
+  if (!text) {
+    backendStatusEl.hidden = true;
+    backendStatusEl.textContent = "";
+    return;
+  }
+  backendStatusEl.textContent = text;
+  backendStatusEl.hidden = false;
+}
+
+function getStateEndpoint() {
+  const { origin, pathname } = window.location;
+
+  let basePath;
+  if (pathname.endsWith("/")) {
+    basePath = pathname;
+  } else if (pathname.endsWith(".html")) {
+    basePath = pathname.slice(0, pathname.lastIndexOf("/") + 1);
+  } else {
+    basePath = `${pathname}/`;
+  }
+
+  return `${origin}${basePath}api/state`;
 }
 
 let sparkLock = false;

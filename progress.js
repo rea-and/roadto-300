@@ -1,7 +1,7 @@
 const STORAGE_KEY = "roadto300.daily.v1";
 const STORAGE_BACKUP_KEY = "roadto300.daily.v1.backup";
 const LEGACY_STORAGE_KEYS = ["trainiq.daily.v2", "trainiq.daily.v1"];
-const API_STATE_ENDPOINT = "api/state";
+const API_STATE_ENDPOINT = getStateEndpoint();
 const MAX_DAILY_POINTS = 5;
 
 const trackerDefs = [
@@ -24,6 +24,7 @@ const totalLegend = document.getElementById("totalLegend");
 const bucketLegend = document.getElementById("bucketLegend");
 const logMeta = document.getElementById("logMeta");
 const logTableBody = document.getElementById("logTableBody");
+const backendStatusEl = document.getElementById("backendStatusProgress");
 
 let logRows = [];
 
@@ -256,14 +257,19 @@ function normalizeDay(dayData) {
 async function loadState() {
   try {
     const response = await fetch(API_STATE_ENDPOINT, { cache: "no-store" });
-    if (response.ok) {
-      const parsed = await response.json();
-      if (parsed && typeof parsed === "object" && parsed.days) {
-        return parsed;
-      }
+    if (!response.ok) {
+      throw new Error(`Backend load failed with status ${response.status}`);
+    }
+    const parsed = await response.json();
+    if (parsed && typeof parsed === "object" && parsed.days) {
+      setBackendStatus("");
+      return parsed;
     }
   } catch (err) {
     console.warn("Could not load backend state, trying localStorage fallback.", err);
+    setBackendStatus(
+      "Cannot connect to backend. This page may not show shared cross-device progress until backend is reachable."
+    );
   }
 
   const localState = loadLegacyLocalState();
@@ -310,4 +316,33 @@ function asPositiveInt(value, fallback, minValue) {
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
+}
+
+function setBackendStatus(message) {
+  if (!backendStatusEl) {
+    return;
+  }
+  const text = (message || "").trim();
+  if (!text) {
+    backendStatusEl.hidden = true;
+    backendStatusEl.textContent = "";
+    return;
+  }
+  backendStatusEl.textContent = text;
+  backendStatusEl.hidden = false;
+}
+
+function getStateEndpoint() {
+  const { origin, pathname } = window.location;
+
+  let basePath;
+  if (pathname.endsWith("/")) {
+    basePath = pathname;
+  } else if (pathname.endsWith(".html")) {
+    basePath = pathname.slice(0, pathname.lastIndexOf("/") + 1);
+  } else {
+    basePath = `${pathname}/`;
+  }
+
+  return `${origin}${basePath}api/state`;
 }
