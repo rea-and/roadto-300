@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RoadTo-300</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bungee:wght@400&family=Nunito:wght@500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="background-glow" aria-hidden="true"></div>
+    <main class="app-shell">
+      <header class="hero">
+        <p class="eyebrow">90-Day Challenge Tracker</p>
+        <h1>RoadTo-300</h1>
+        <p class="subtitle">
+          90 days. 300 points goal. Max 5 points per day.
+        </p>
+      </header>
+
+      <section class="control-panel">
+        <label for="entryDate">Track date</label>
+        <input type="date" id="entryDate" />
+        <button id="resetDay" class="ghost-button" type="button">Reset Day</button>
+        <div class="score-pill" id="scorePill">Today: 0.00 / 5 points</div>
+      </section>
+
+      <section class="cards-grid" id="cardsGrid">
+        <article class="tracker-card" data-key="gym">
+          <h2>Gym Workout</h2>
+          <p class="card-note">Did you show up and train today?</p>
+          <div class="field-row">
+            <label for="gymTarget">Target sessions</label>
+            <input type="number" min="1" max="3" step="1" id="gymTarget" value="1" />
+          </div>
+          <div class="field-row">
+            <label for="gymDone">Done</label>
+            <input type="number" min="0" max="3" step="1" id="gymDone" value="0" />
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-bar"><span id="gymBar"></span></div>
+            <p id="gymText">0 / 1</p>
+          </div>
+        </article>
+
+        <article class="tracker-card" data-key="strain">
+          <h2>Daily Strain</h2>
+          <p class="card-note">Match your strain quota for the day.</p>
+          <div class="field-row">
+            <label for="strainTarget">Target strain</label>
+            <input type="number" min="1" max="100" step="1" id="strainTarget" value="14" />
+          </div>
+          <div class="field-row">
+            <label for="strainDone">Achieved strain</label>
+            <input type="number" min="0" max="100" step="1" id="strainDone" value="0" />
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-bar"><span id="strainBar"></span></div>
+            <p id="strainText">0 / 14</p>
+          </div>
+        </article>
+
+        <article class="tracker-card" data-key="carbFree">
+          <h2>Carb-Free Meals</h2>
+          <p class="card-note">Hit your carb-free meal goal.</p>
+          <div class="field-row">
+            <label for="carbTarget">Target carb-free meals</label>
+            <input type="number" min="1" max="8" step="1" id="carbTarget" value="3" />
+          </div>
+          <div class="field-row">
+            <label for="carbDone">Carb-free meals</label>
+            <input type="number" min="0" max="8" step="1" id="carbDone" value="0" />
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-bar"><span id="carbBar"></span></div>
+            <p id="carbText">0 / 3</p>
+          </div>
+        </article>
+
+        <article class="tracker-card" data-key="supplements">
+          <h2>Supplements</h2>
+          <p class="card-note">Binary check: taken or not taken.</p>
+          <div class="field-row binary-row">
+            <label for="suppTaken">Taken today</label>
+            <input type="checkbox" id="suppTaken" />
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-bar"><span id="suppBar"></span></div>
+            <p id="suppText">Not taken</p>
+          </div>
+        </article>
+      </section>
+
+      <section class="summary-strip" id="summaryStrip">
+        <div>
+          <p class="summary-label">Challenge points</p>
+          <p class="summary-value" id="challengePoints">0 / 300</p>
+        </div>
+        <div>
+          <p class="summary-label">Days left</p>
+          <p class="summary-value" id="daysLeft">90</p>
+        </div>
+        <div>
+          <p class="summary-label">Target pace</p>
+          <p class="summary-value" id="paceText">0.00/day</p>
+        </div>
+        <div>
+          <p class="summary-label">Best streak</p>
+          <p class="summary-value" id="bestStreak">0 days</p>
+        </div>
+        <div>
+          <p class="summary-label">Current streak</p>
+          <p class="summary-value" id="currentStreak">0 days</p>
+        </div>
+        <div>
+          <p class="summary-label">Perfect days</p>
+          <p class="summary-value" id="perfectDays">0</p>
+        </div>
+      </section>
+
+      <section class="insights-section">
+        <article class="insight-card">
+          <h3>Daily Breakdown</h3>
+          <div id="dailyBreakdown"></div>
+        </article>
+        <article class="insight-card">
+          <h3>Weekly Progress (Last 7 Days)</h3>
+          <p class="week-meta"><span id="weekAvg">Weekly avg: 0 / 100</span> | <span id="weekPerfect">Perfect days: 0 / 7</span></p>
+          <div id="weeklyList"></div>
+        </article>
+      </section>
+    </main>
+
+    <canvas id="sparkCanvas" aria-hidden="true"></canvas>
+    <script src="./app.js"></script>
+  </body>
+</html>
