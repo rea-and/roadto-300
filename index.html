@@ -14,9 +14,31 @@
   </head>
   <body>
     <div class="background-glow" aria-hidden="true"></div>
+
+    <button
+      id="menuToggle"
+      class="menu-toggle"
+      type="button"
+      aria-label="Open menu"
+      aria-controls="appMenu"
+      aria-expanded="false"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <div id="menuBackdrop" class="menu-backdrop" hidden></div>
+    <aside id="appMenu" class="app-menu" aria-hidden="true">
+      <h2>Menu</h2>
+      <button id="restartChallenge" class="menu-action" type="button">
+        Restart 90-Day Challenge from Log Date
+      </button>
+    </aside>
+
     <main class="app-shell">
       <header class="hero">
-        <p class="eyebrow">90-Day Challenge Tracker</p>
+        <p class="eyebrow">Andrea's 90-Day Challenge</p>
         <h1>RoadTo-300</h1>
         <p class="subtitle">
           90 days. 300 points goal. Max 5 points per day.
@@ -24,7 +46,7 @@
       </header>
 
       <section class="control-panel">
-        <label for="entryDate">Track date</label>
+        <label for="entryDate">Log Date</label>
         <input type="date" id="entryDate" />
         <button id="resetDay" class="ghost-button" type="button">Reset Day</button>
         <div class="score-pill" id="scorePill">Today: 0.00 / 5 points</div>

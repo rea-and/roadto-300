@@ -60,6 +60,10 @@ const weekPerfectEl = document.getElementById("weekPerfect");
 const challengePointsEl = document.getElementById("challengePoints");
 const daysLeftEl = document.getElementById("daysLeft");
 const paceTextEl = document.getElementById("paceText");
+const menuToggleBtn = document.getElementById("menuToggle");
+const appMenu = document.getElementById("appMenu");
+const menuBackdrop = document.getElementById("menuBackdrop");
+const restartChallengeBtn = document.getElementById("restartChallenge");
 
 const defaultData = {
   gym: { target: 1, done: 0 },
@@ -86,6 +90,41 @@ function bindEvents() {
       return;
     }
     state.days[entryDate.value] = structuredClone(defaultData);
+    persistState();
+    hydrateDate();
+    updateUI();
+  });
+
+  menuToggleBtn.addEventListener("click", () => {
+    if (appMenu.classList.contains("is-open")) {
+      closeMenu();
+      return;
+    }
+    openMenu();
+  });
+
+  menuBackdrop.addEventListener("click", closeMenu);
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeMenu();
+    }
+  });
+
+  restartChallengeBtn.addEventListener("click", () => {
+    const startDate = entryDate.value || todayISO();
+    const confirmed = confirm(
+      `Restart the 90-day challenge from ${startDate}? This clears all saved progress.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    state.challengeStart = startDate;
+    state.days = { [startDate]: structuredClone(defaultData) };
+    entryDate.value = startDate;
+    closeMenu();
     persistState();
     hydrateDate();
     updateUI();
@@ -118,6 +157,20 @@ function bindEvents() {
       persistState();
     }
   });
+}
+
+function openMenu() {
+  appMenu.classList.add("is-open");
+  appMenu.setAttribute("aria-hidden", "false");
+  menuToggleBtn.setAttribute("aria-expanded", "true");
+  menuBackdrop.hidden = false;
+}
+
+function closeMenu() {
+  appMenu.classList.remove("is-open");
+  appMenu.setAttribute("aria-hidden", "true");
+  menuToggleBtn.setAttribute("aria-expanded", "false");
+  menuBackdrop.hidden = true;
 }
 
 function hydrateDate() {
