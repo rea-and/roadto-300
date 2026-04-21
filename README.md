@@ -20,7 +20,7 @@ The frontend still keeps a local browser backup only as a fallback.
 
 ```bash
 cd /Users/andrea/Projects/roadto-300
-node server.js
+./backend.sh start
 ```
 
 Open: `http://127.0.0.1:9000`
@@ -38,31 +38,24 @@ sudo mkdir -p /var/www/roadto300
 sudo cp -r /Users/andrea/Projects/roadto-300/* /var/www/roadto300/
 ```
 
-### 2) Run the Node backend service
+### 2) Run the backend with the project script (no systemd)
 
-Create a simple systemd service so `/api/state` can persist to disk:
-
-```ini
-# /etc/systemd/system/roadto300.service
-[Unit]
-Description=RoadTo-300 backend
-After=network.target
-
-[Service]
-WorkingDirectory=/var/www/roadto300
-ExecStart=/usr/bin/node /var/www/roadto300/server.js
-Restart=always
-User=www-data
-Environment=PORT=9000
-Environment=HOST=127.0.0.1
-
-[Install]
-WantedBy=multi-user.target
-```
+From the project folder:
 
 ```bash
-sudo systemctl daemon-reload
-sudo systemctl enable --now roadto300
+cd /var/www/roadto300
+./backend.sh start
+./backend.sh status
+```
+
+Script commands:
+
+```bash
+./backend.sh start
+./backend.sh stop
+./backend.sh restart
+./backend.sh status
+./backend.sh logs
 ```
 
 ### 3) Add subpath mapping to your existing `carlevato.net` VirtualHost
@@ -151,7 +144,8 @@ sudo systemctl disable apache2
 
 ```bash
 sudo cp -r /Users/andrea/Projects/roadto-300/* /var/www/roadto300/
-sudo systemctl restart roadto300
+cd /var/www/roadto300
+./backend.sh restart
 sudo apachectl configtest
 sudo systemctl reload apache2
 ```
