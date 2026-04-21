@@ -1,6 +1,7 @@
 const STORAGE_KEY = "roadto300.daily.v1";
 const STORAGE_BACKUP_KEY = "roadto300.daily.v1.backup";
 const LEGACY_STORAGE_KEYS = ["trainiq.daily.v2", "trainiq.daily.v1"];
+const API_STATE_ENDPOINT = "api/state";
 const MAX_DAILY_POINTS = 5;
 
 const trackerDefs = [
@@ -24,16 +25,21 @@ const bucketLegend = document.getElementById("bucketLegend");
 const logMeta = document.getElementById("logMeta");
 const logTableBody = document.getElementById("logTableBody");
 
-const state = loadState();
-const logRows = buildRows(state.days);
+let logRows = [];
 
 renderLegends();
-renderTable(logRows);
-renderCharts(logRows);
+bootstrap();
 
 window.addEventListener("resize", () => {
   renderCharts(logRows);
 });
+
+async function bootstrap() {
+  const state = await loadState();
+  logRows = buildRows(state.days);
+  renderTable(logRows);
+  renderCharts(logRows);
+}
 
 function buildRows(daysMap) {
   const dayKeys = Object.keys(daysMap || {}).sort();
@@ -247,7 +253,28 @@ function normalizeDay(dayData) {
   return day;
 }
 
-function loadState() {
+async function loadState() {
+  try {
+    const response = await fetch(API_STATE_ENDPOINT, { cache: "no-store" });
+    if (response.ok) {
+      const parsed = await response.json();
+      if (parsed && typeof parsed === "object" && parsed.days) {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.warn("Could not load backend state, trying localStorage fallback.", err);
+  }
+
+  const localState = loadLegacyLocalState();
+  if (localState) {
+    return localState;
+  }
+
+  return { days: {} };
+}
+
+function loadLegacyLocalState() {
   const candidates = [STORAGE_KEY, STORAGE_BACKUP_KEY, ...LEGACY_STORAGE_KEYS];
   for (const key of candidates) {
     try {
@@ -260,7 +287,7 @@ function loadState() {
       console.error(`Could not load saved tracker state from ${key}`, err);
     }
   }
-  return { days: {} };
+  return null;
 }
 
 function formatLongDate(dateKey) {

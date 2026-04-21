@@ -1,6 +1,7 @@
 const STORAGE_KEY = "roadto300.daily.v1";
 const STORAGE_BACKUP_KEY = "roadto300.daily.v1.backup";
 const LEGACY_STORAGE_KEYS = ["trainiq.daily.v2", "trainiq.daily.v1"];
+const API_STATE_ENDPOINT = "api/state";
 const CHALLENGE_DAYS = 90;
 const CHALLENGE_TARGET_POINTS = 300;
 const MAX_DAILY_POINTS = 5;
@@ -72,12 +73,24 @@ const defaultData = {
   supplements: { taken: false },
 };
 
-const state = loadState();
-entryDate.value = todayISO();
-hydrateDate();
-bindEvents();
-persistState();
-updateUI();
+const state = {
+  days: {},
+  challengeStart: todayISO(),
+};
+
+bootstrap();
+
+async function bootstrap() {
+  const loaded = await loadState();
+  state.days = loaded.days;
+  state.challengeStart = loaded.challengeStart;
+
+  entryDate.value = todayISO();
+  hydrateDate();
+  bindEvents();
+  updateUI();
+  await persistState();
+}
 
 function bindEvents() {
   entryDate.addEventListener("change", () => {
@@ -90,7 +103,7 @@ function bindEvents() {
       return;
     }
     state.days[entryDate.value] = structuredClone(defaultData);
-    persistState();
+    void persistState();
     hydrateDate();
     updateUI();
   });
@@ -125,7 +138,7 @@ function bindEvents() {
     state.days = { [startDate]: structuredClone(defaultData) };
     entryDate.value = startDate;
     closeMenu();
-    persistState();
+    void persistState();
     hydrateDate();
     updateUI();
   });
@@ -136,7 +149,7 @@ function bindEvents() {
       const doneInput = document.getElementById(def.doneId);
       [targetInput, doneInput].forEach((input) => {
         input.addEventListener("input", () => {
-          syncToState();
+          void syncToState();
           updateUI();
         });
       });
@@ -144,17 +157,21 @@ function bindEvents() {
 
     if (def.type === "binary") {
       document.getElementById(def.takenId).addEventListener("change", () => {
-        syncToState();
+        void syncToState();
         updateUI();
       });
     }
   });
 
-  window.addEventListener("beforeunload", persistState);
-  window.addEventListener("pagehide", persistState);
+  window.addEventListener("beforeunload", () => {
+    void persistState();
+  });
+  window.addEventListener("pagehide", () => {
+    void persistState();
+  });
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") {
-      persistState();
+      void persistState();
     }
   });
 }
@@ -187,7 +204,7 @@ function hydrateDate() {
   });
 }
 
-function syncToState() {
+async function syncToState() {
   const day = structuredClone(defaultData);
 
   trackerDefs.forEach((def) => {
@@ -205,7 +222,7 @@ function syncToState() {
   });
 
   state.days[entryDate.value] = day;
-  persistState();
+  await persistState();
 }
 
 function updateUI() {
@@ -437,7 +454,34 @@ function todayISO() {
   return now.toISOString().slice(0, 10);
 }
 
-function loadState() {
+async function loadState() {
+  try {
+    const response = await fetch(API_STATE_ENDPOINT, { cache: "no-store" });
+    if (response.ok) {
+      const parsed = await response.json();
+      if (parsed && typeof parsed === "object" && parsed.days) {
+        return {
+          days: parsed.days,
+          challengeStart: parsed.challengeStart || firstTrackedDay(parsed.days) || todayISO(),
+        };
+      }
+    }
+  } catch (err) {
+    console.warn("Could not load state from backend, trying localStorage fallback.", err);
+  }
+
+  const localState = loadLegacyLocalState();
+  if (localState) {
+    return localState;
+  }
+
+  return {
+    days: { [todayISO()]: structuredClone(defaultData) },
+    challengeStart: todayISO(),
+  };
+}
+
+function loadLegacyLocalState() {
   const candidates = [STORAGE_KEY, STORAGE_BACKUP_KEY, ...LEGACY_STORAGE_KEYS];
   for (const key of candidates) {
     try {
@@ -454,19 +498,31 @@ function loadState() {
     }
   }
 
-  return {
-    days: { [todayISO()]: structuredClone(defaultData) },
-    challengeStart: todayISO(),
-  };
+  return null;
 }
 
-function persistState() {
-  const snapshot = JSON.stringify({
+async function persistState() {
+  const snapshot = {
     ...state,
     updatedAt: new Date().toISOString(),
-  });
-  localStorage.setItem(STORAGE_KEY, snapshot);
-  localStorage.setItem(STORAGE_BACKUP_KEY, snapshot);
+  };
+
+  try {
+    const response = await fetch(API_STATE_ENDPOINT, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(snapshot),
+    });
+    if (!response.ok) {
+      throw new Error(`Backend save failed with status ${response.status}`);
+    }
+  } catch (err) {
+    console.error("Could not persist tracker state to backend.", err);
+  }
+
+  const localSnapshot = JSON.stringify(snapshot);
+  localStorage.setItem(STORAGE_KEY, localSnapshot);
+  localStorage.setItem(STORAGE_BACKUP_KEY, localSnapshot);
 }
 
 function firstTrackedDay(daysMap) {
