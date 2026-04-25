@@ -6,7 +6,7 @@ const MAX_DAILY_POINTS = 5;
 
 const trackerDefs = [
   { key: "gym", type: "numeric", weight: 35, label: "Gym", color: "#6ae5ff" },
-  { key: "strain", type: "numeric", weight: 16.25, label: "Strain", color: "#ffc63d" },
+  { key: "strain", type: "numeric", weight: 16.25, allowDecimal: true, label: "Strain", color: "#ffc63d" },
   { key: "carbFree", type: "numeric", weight: 16.25, label: "Carb-Free", color: "#ff7b37" },
   {
     key: "supplements",
@@ -259,7 +259,7 @@ function getBucketText(def, item, ratio) {
     const offText = def.binaryOffText || "Not done";
     return item.taken ? `${onText} (100%)` : `${offText} (0%)`;
   }
-  return `${item.done}/${item.target} (${Math.round(ratio * 100)}%)`;
+  return `${formatNumericInput(def, item.done)}/${formatNumericInput(def, item.target)} (${Math.round(ratio * 100)}%)`;
 }
 
 function getDayPoints(dayData) {
@@ -289,8 +289,8 @@ function normalizeDay(dayData) {
     const source = dayData[def.key] || {};
     if (def.type === "numeric") {
       day[def.key] = {
-        target: asPositiveInt(source.target, day[def.key].target, 1),
-        done: asPositiveInt(source.done, day[def.key].done, 0),
+        target: parseNumericInput(def, source.target, day[def.key].target, 1),
+        done: parseNumericInput(def, source.done, day[def.key].done, 0),
       };
     }
 
@@ -363,6 +363,30 @@ function asPositiveInt(value, fallback, minValue) {
     return fallback;
   }
   return Math.max(parsed, minValue);
+}
+
+function asPositiveNumber(value, fallback, minValue, decimals = 1) {
+  const parsed = Number.parseFloat(value);
+  if (!Number.isFinite(parsed)) {
+    return fallback;
+  }
+  const safe = Math.max(parsed, minValue);
+  const factor = 10 ** decimals;
+  return Math.round(safe * factor) / factor;
+}
+
+function parseNumericInput(def, value, fallback, minValue) {
+  if (def.allowDecimal) {
+    return asPositiveNumber(value, fallback, minValue, 1);
+  }
+  return asPositiveInt(value, fallback, minValue);
+}
+
+function formatNumericInput(def, value) {
+  if (def.allowDecimal) {
+    return Number(value).toFixed(1);
+  }
+  return String(value);
 }
 
 function parseWeightKg(value) {

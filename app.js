@@ -21,6 +21,7 @@ const trackerDefs = [
     key: "strain",
     type: "numeric",
     weight: 16.25,
+    allowDecimal: true,
     targetId: "strainTarget",
     doneId: "strainDone",
     barId: "strainBar",
@@ -238,11 +239,11 @@ async function syncToState(dateKey = entryDate.value) {
 
   trackerDefs.forEach((def) => {
     if (def.type === "numeric") {
-      const target = asPositiveInt(document.getElementById(def.targetId).value, 1, 1);
-      const done = asPositiveInt(document.getElementById(def.doneId).value, 0, 0);
+      const target = parseNumericInput(def, document.getElementById(def.targetId).value, 1, 1);
+      const done = parseNumericInput(def, document.getElementById(def.doneId).value, 0, 0);
       day[def.key] = { target, done };
-      document.getElementById(def.targetId).value = target;
-      document.getElementById(def.doneId).value = done;
+      document.getElementById(def.targetId).value = formatNumericInput(def, target);
+      document.getElementById(def.doneId).value = formatNumericInput(def, done);
     }
 
     if (def.type === "binary") {
@@ -372,7 +373,7 @@ function getTrackerText(def, item) {
     return item.taken ? def.binaryOnText || "Done" : def.binaryOffText || "Not done";
   }
 
-  return `${item.done} / ${item.target}`;
+  return `${formatNumericInput(def, item.done)} / ${formatNumericInput(def, item.target)}`;
 }
 
 function computeStreaks() {
@@ -429,8 +430,8 @@ function normalizeDay(dayData) {
     const source = dayData[def.key] || {};
     if (def.type === "numeric") {
       day[def.key] = {
-        target: asPositiveInt(source.target, day[def.key].target, 1),
-        done: asPositiveInt(source.done, day[def.key].done, 0),
+        target: parseNumericInput(def, source.target, day[def.key].target, 1),
+        done: parseNumericInput(def, source.done, day[def.key].done, 0),
       };
     }
 
@@ -478,6 +479,30 @@ function asPositiveInt(value, fallback, minValue) {
     return fallback;
   }
   return Math.max(parsed, minValue);
+}
+
+function asPositiveNumber(value, fallback, minValue, decimals = 1) {
+  const parsed = Number.parseFloat(value);
+  if (!Number.isFinite(parsed)) {
+    return fallback;
+  }
+  const safe = Math.max(parsed, minValue);
+  const factor = 10 ** decimals;
+  return Math.round(safe * factor) / factor;
+}
+
+function parseNumericInput(def, value, fallback, minValue) {
+  if (def.allowDecimal) {
+    return asPositiveNumber(value, fallback, minValue, 1);
+  }
+  return asPositiveInt(value, fallback, minValue);
+}
+
+function formatNumericInput(def, value) {
+  if (def.allowDecimal) {
+    return Number(value).toFixed(1);
+  }
+  return String(value);
 }
 
 function parseWeightKg(value) {
