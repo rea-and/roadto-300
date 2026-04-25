@@ -10,7 +10,7 @@ const trackerDefs = [
   {
     key: "gym",
     type: "numeric",
-    weight: 25,
+    weight: 35,
     targetId: "gymTarget",
     doneId: "gymDone",
     barId: "gymBar",
@@ -20,7 +20,7 @@ const trackerDefs = [
   {
     key: "strain",
     type: "numeric",
-    weight: 25,
+    weight: 16.25,
     targetId: "strainTarget",
     doneId: "strainDone",
     barId: "strainBar",
@@ -30,7 +30,7 @@ const trackerDefs = [
   {
     key: "carbFree",
     type: "numeric",
-    weight: 25,
+    weight: 16.25,
     targetId: "carbTarget",
     doneId: "carbDone",
     barId: "carbBar",
@@ -40,11 +40,24 @@ const trackerDefs = [
   {
     key: "supplements",
     type: "binary",
-    weight: 25,
+    weight: 16.25,
     takenId: "suppTaken",
     barId: "suppBar",
     textId: "suppText",
     label: "Supplements",
+    binaryOnText: "Taken",
+    binaryOffText: "Not taken",
+  },
+  {
+    key: "fasting",
+    type: "binary",
+    weight: 16.25,
+    takenId: "fastingTaken",
+    barId: "fastingBar",
+    textId: "fastingText",
+    label: "Fasting",
+    binaryOnText: "Done",
+    binaryOffText: "Not done",
   },
 ];
 
@@ -66,12 +79,15 @@ const appMenu = document.getElementById("appMenu");
 const menuBackdrop = document.getElementById("menuBackdrop");
 const restartChallengeBtn = document.getElementById("restartChallenge");
 const backendStatusEl = document.getElementById("backendStatus");
+const weightKgInput = document.getElementById("weightKg");
 
 const defaultData = {
   gym: { target: 1, done: 0 },
   strain: { target: 14, done: 0 },
   carbFree: { target: 3, done: 0 },
   supplements: { taken: false },
+  fasting: { taken: false },
+  weightKg: null,
 };
 
 const state = {
@@ -164,6 +180,11 @@ function bindEvents() {
     }
   });
 
+  weightKgInput.addEventListener("input", () => {
+    void syncToState();
+    updateUI();
+  });
+
   window.addEventListener("beforeunload", () => {
     void persistState();
   });
@@ -203,6 +224,8 @@ function hydrateDate() {
       document.getElementById(def.takenId).checked = !!entry.taken;
     }
   });
+
+  weightKgInput.value = day.weightKg === null ? "" : String(day.weightKg);
 }
 
 async function syncToState() {
@@ -221,6 +244,8 @@ async function syncToState() {
       day[def.key] = { taken: document.getElementById(def.takenId).checked };
     }
   });
+
+  day.weightKg = parseWeightKg(weightKgInput.value);
 
   state.days[entryDate.value] = day;
   await persistState();
@@ -336,7 +361,7 @@ function getTrackerRatio(def, item) {
 
 function getTrackerText(def, item) {
   if (def.type === "binary") {
-    return item.taken ? "Taken" : "Not taken";
+    return item.taken ? def.binaryOnText || "Done" : def.binaryOffText || "Not done";
   }
 
   return `${item.done} / ${item.target}`;
@@ -407,6 +432,8 @@ function normalizeDay(dayData) {
     }
   });
 
+  day.weightKg = parseWeightKg(dayData.weightKg);
+
   return day;
 }
 
@@ -443,6 +470,19 @@ function asPositiveInt(value, fallback, minValue) {
     return fallback;
   }
   return Math.max(parsed, minValue);
+}
+
+function parseWeightKg(value) {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+
+  const parsed = Number.parseFloat(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return null;
+  }
+
+  return Math.round(parsed * 10) / 10;
 }
 
 function clamp(value, min, max) {

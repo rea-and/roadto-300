@@ -7,9 +7,11 @@ Tracks daily progress for:
 - daily strain quota
 - carb-free meals
 - supplements (taken / not taken)
+- fasting (at least 12 hours without food)
+- body weight in kg (logged only, not scored)
 
 Scoring model:
-- 4 categories, each weighted at 25%
+- 5 categories weighted as: gym 35%, strain 16.25%, carb-free meals 16.25%, supplements 16.25%, fasting 16.25%
 - max **5 points/day**
 - challenge target: **300 points in 90 days**
 

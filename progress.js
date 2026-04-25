@@ -5,10 +5,27 @@ const API_STATE_ENDPOINT = getStateEndpoint();
 const MAX_DAILY_POINTS = 5;
 
 const trackerDefs = [
-  { key: "gym", type: "numeric", weight: 25, label: "Gym", color: "#6ae5ff" },
-  { key: "strain", type: "numeric", weight: 25, label: "Strain", color: "#ffc63d" },
-  { key: "carbFree", type: "numeric", weight: 25, label: "Carb-Free", color: "#ff7b37" },
-  { key: "supplements", type: "binary", weight: 25, label: "Supplements", color: "#8affc1" },
+  { key: "gym", type: "numeric", weight: 35, label: "Gym", color: "#6ae5ff" },
+  { key: "strain", type: "numeric", weight: 16.25, label: "Strain", color: "#ffc63d" },
+  { key: "carbFree", type: "numeric", weight: 16.25, label: "Carb-Free", color: "#ff7b37" },
+  {
+    key: "supplements",
+    type: "binary",
+    weight: 16.25,
+    label: "Supplements",
+    color: "#8affc1",
+    binaryOnText: "Taken",
+    binaryOffText: "Not taken",
+  },
+  {
+    key: "fasting",
+    type: "binary",
+    weight: 16.25,
+    label: "Fasting",
+    color: "#a49dff",
+    binaryOnText: "Done",
+    binaryOffText: "Not done",
+  },
 ];
 
 const defaultData = {
@@ -16,12 +33,16 @@ const defaultData = {
   strain: { target: 14, done: 0 },
   carbFree: { target: 3, done: 0 },
   supplements: { taken: false },
+  fasting: { taken: false },
+  weightKg: null,
 };
 
 const totalTrendCanvas = document.getElementById("totalTrendCanvas");
 const bucketTrendCanvas = document.getElementById("bucketTrendCanvas");
+const weightTrendCanvas = document.getElementById("weightTrendCanvas");
 const totalLegend = document.getElementById("totalLegend");
 const bucketLegend = document.getElementById("bucketLegend");
+const weightLegend = document.getElementById("weightLegend");
 const logMeta = document.getElementById("logMeta");
 const logTableBody = document.getElementById("logTableBody");
 const backendStatusEl = document.getElementById("backendStatusProgress");
@@ -58,14 +79,14 @@ function buildRows(daysMap) {
       };
     });
 
-    return { dateKey, total, bucket };
+    return { dateKey, total, bucket, weightKg: day.weightKg };
   });
 }
 
 function renderTable(rows) {
   if (!rows.length) {
     logMeta.textContent = "No tracked days yet.";
-    logTableBody.innerHTML = `<tr><td colspan="6" class="muted">Start logging in the tracker to see your progress here.</td></tr>`;
+    logTableBody.innerHTML = `<tr><td colspan="8" class="muted">Start logging in the tracker to see your progress here.</td></tr>`;
     return;
   }
 
@@ -82,6 +103,8 @@ function renderTable(rows) {
         <td>${row.bucket.strain.text}</td>
         <td>${row.bucket.carbFree.text}</td>
         <td>${row.bucket.supplements.text}</td>
+        <td>${row.bucket.fasting.text}</td>
+        <td>${formatWeight(row.weightKg)}</td>
       </tr>`;
     })
     .join("");
@@ -91,6 +114,7 @@ function renderCharts(rows) {
   if (!rows.length) {
     drawNoData(totalTrendCanvas);
     drawNoData(bucketTrendCanvas);
+    drawNoData(weightTrendCanvas);
     return;
   }
 
@@ -112,6 +136,28 @@ function renderCharts(rows) {
   }));
 
   drawLineChart(bucketTrendCanvas, labels, bucketDatasets, 0, 100);
+
+  const weightRows = rows.filter((row) => row.weightKg !== null);
+  if (!weightRows.length) {
+    drawNoData(weightTrendCanvas);
+    return;
+  }
+
+  const weightLabels = weightRows.map((row) => row.dateKey);
+  const weightValues = weightRows.map((row) => row.weightKg);
+  const minWeight = Math.min(...weightValues);
+  const maxWeight = Math.max(...weightValues);
+  const pad = Math.max(1, (maxWeight - minWeight) * 0.2);
+  const minY = Math.max(0, minWeight - pad);
+  const maxY = maxWeight + pad;
+
+  drawLineChart(
+    weightTrendCanvas,
+    weightLabels,
+    [{ label: "Weight (kg)", color: "#ffd166", values: weightValues }],
+    minY,
+    maxY
+  );
 }
 
 function drawNoData(canvas) {
@@ -204,11 +250,14 @@ function renderLegends() {
         `<span class="legend-chip"><span class="legend-dot" style="background:${def.color}"></span>${def.label}</span>`
     )
     .join("");
+  weightLegend.innerHTML = `<span class="legend-chip"><span class="legend-dot" style="background:#ffd166"></span>Weight (kg)</span>`;
 }
 
 function getBucketText(def, item, ratio) {
   if (def.type === "binary") {
-    return item.taken ? "Taken (100%)" : "Not taken (0%)";
+    const onText = def.binaryOnText || "Done";
+    const offText = def.binaryOffText || "Not done";
+    return item.taken ? `${onText} (100%)` : `${offText} (0%)`;
   }
   return `${item.done}/${item.target} (${Math.round(ratio * 100)}%)`;
 }
@@ -250,6 +299,8 @@ function normalizeDay(dayData) {
       day[def.key] = { taken: Boolean(source.taken ?? legacyTaken) };
     }
   });
+
+  day.weightKg = parseWeightKg(dayData.weightKg);
 
   return day;
 }
@@ -312,6 +363,26 @@ function asPositiveInt(value, fallback, minValue) {
     return fallback;
   }
   return Math.max(parsed, minValue);
+}
+
+function parseWeightKg(value) {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+
+  const parsed = Number.parseFloat(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return null;
+  }
+
+  return Math.round(parsed * 10) / 10;
+}
+
+function formatWeight(value) {
+  if (value === null || value === undefined) {
+    return "-";
+  }
+  return value.toFixed(1);
 }
 
 function clamp(value, min, max) {
