@@ -30,7 +30,7 @@ const trackerDefs = [
 
 const defaultData = {
   gym: { target: 1, done: 0 },
-  strain: { target: 14, done: 0 },
+  strain: { target: 15, done: 0 },
   carbFree: { target: 3, done: 0 },
   supplements: { taken: false },
   fasting: { taken: false },

@@ -83,7 +83,7 @@ const weightKgInput = document.getElementById("weightKg");
 
 const defaultData = {
   gym: { target: 1, done: 0 },
-  strain: { target: 14, done: 0 },
+  strain: { target: 15, done: 0 },
   carbFree: { target: 3, done: 0 },
   supplements: { taken: false },
   fasting: { taken: false },
@@ -225,7 +225,7 @@ function hydrateDate() {
     }
   });
 
-  weightKgInput.value = day.weightKg === null ? "" : String(day.weightKg);
+  weightKgInput.value = day.weightKg === null ? "" : day.weightKg.toFixed(1);
 }
 
 async function syncToState() {
@@ -246,6 +246,9 @@ async function syncToState() {
   });
 
   day.weightKg = parseWeightKg(weightKgInput.value);
+  if (day.weightKg !== null) {
+    weightKgInput.value = day.weightKg.toFixed(1);
+  }
 
   state.days[entryDate.value] = day;
   await persistState();
