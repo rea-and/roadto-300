@@ -73,6 +73,7 @@ const weeklyListEl = document.getElementById("weeklyList");
 const weekAvgEl = document.getElementById("weekAvg");
 const weekPerfectEl = document.getElementById("weekPerfect");
 const challengePointsEl = document.getElementById("challengePoints");
+const challengeDayEl = document.getElementById("challengeDay");
 const daysLeftEl = document.getElementById("daysLeft");
 const paceTextEl = document.getElementById("paceText");
 const menuToggleBtn = document.getElementById("menuToggle");
@@ -346,6 +347,7 @@ function renderChallengeProgress(referenceDate) {
   const remaining = Math.max(0, CHALLENGE_TARGET_POINTS - total);
   const neededPerDay = left > 0 ? remaining / left : remaining;
 
+  challengeDayEl.textContent = `Day ${elapsed} / ${CHALLENGE_DAYS}`;
   challengePointsEl.textContent = `${total.toFixed(2)} / ${CHALLENGE_TARGET_POINTS}`;
   daysLeftEl.textContent = String(left);
   paceTextEl.textContent = `${neededPerDay.toFixed(2)}/day`;

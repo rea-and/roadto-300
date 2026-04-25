@@ -35,6 +35,22 @@
       <button id="restartChallenge" class="menu-action" type="button">
         Restart 90-Day Challenge from Log Date
       </button>
+      <section class="menu-help" aria-label="How this works">
+        <h3>How this works</h3>
+        <p>
+          Each day has 5 factors and a max score of 5 points.
+        </p>
+        <ul>
+          <li>Gym: 35% of daily score</li>
+          <li>Strain: 16.25%</li>
+          <li>Carb-free meals: 16.25%</li>
+          <li>Supplements: 16.25%</li>
+          <li>Fasting: 16.25%</li>
+        </ul>
+        <p>
+          Weight is logged for trends only and does not affect points.
+        </p>
+      </section>
     </aside>
 
     <main class="app-shell">
@@ -144,6 +160,10 @@
       </section>
 
       <section class="summary-strip" id="summaryStrip">
+        <div>
+          <p class="summary-label">Challenge day</p>
+          <p class="summary-value" id="challengeDay">Day 1 / 90</p>
+        </div>
         <div>
           <p class="summary-label">Challenge points</p>
           <p class="summary-value" id="challengePoints">0 / 300</p>
