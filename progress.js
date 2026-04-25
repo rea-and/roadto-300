@@ -399,7 +399,8 @@ function parseWeightKg(value) {
     return null;
   }
 
-  return Math.round(parsed * 10) / 10;
+  const clamped = Math.min(parsed, 120);
+  return Math.round(clamped * 10) / 10;
 }
 
 function formatWeight(value) {
