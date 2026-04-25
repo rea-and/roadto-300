@@ -244,18 +244,27 @@ input[type="checkbox"] {
 .cards-grid {
   margin-top: 20px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 14px;
+  align-items: stretch;
 }
 
 .tracker-card {
+  grid-column: span 3;
   border-radius: 18px;
   border: 2px solid rgba(255, 255, 255, 0.22);
   padding: 14px;
   background: linear-gradient(145deg, var(--panel), rgba(255, 255, 255, 0.06));
+  display: flex;
+  flex-direction: column;
   transform: translateY(14px);
   opacity: 0;
   animation: pop-in 0.5s ease forwards;
+}
+
+.tracker-card[data-key="fasting"],
+.tracker-card[data-key="weight"] {
+  grid-column: span 6;
 }
 
 .tracker-card:nth-child(2) {
@@ -291,24 +300,30 @@ input[type="checkbox"] {
 
 .field-row {
   display: grid;
-  grid-template-columns: 1fr 94px;
+  grid-template-columns: minmax(0, 1fr) 168px;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 8px;
 }
 
 .binary-row {
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) 36px;
 }
 
 .progress-wrap {
-  margin-top: 10px;
+  margin-top: auto;
+  padding-top: 10px;
 }
 
 .progress-wrap p {
   margin: 6px 0 0;
   text-align: right;
   font-weight: 900;
+}
+
+.tracker-card[data-key="weight"] .field-row {
+  margin-top: auto;
+  margin-bottom: 0;
 }
 
 .progress-bar {
@@ -518,6 +533,16 @@ input[type="checkbox"] {
 }
 
 @media (max-width: 760px) {
+  .tracker-card,
+  .tracker-card[data-key="fasting"],
+  .tracker-card[data-key="weight"] {
+    grid-column: span 12;
+  }
+
+  .field-row {
+    grid-template-columns: minmax(0, 1fr) 132px;
+  }
+
   .control-panel {
     grid-template-columns: 1fr;
   }
@@ -542,5 +567,16 @@ input[type="checkbox"] {
   .progress-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+@media (max-width: 1180px) and (min-width: 761px) {
+  .tracker-card {
+    grid-column: span 6;
+  }
+
+  .tracker-card[data-key="fasting"],
+  .tracker-card[data-key="weight"] {
+    grid-column: span 6;
   }
 }

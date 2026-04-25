@@ -94,6 +94,7 @@ const state = {
   days: {},
   challengeStart: todayISO(),
 };
+let activeDateKey = todayISO();
 
 bootstrap();
 
@@ -103,6 +104,7 @@ async function bootstrap() {
   state.challengeStart = loaded.challengeStart;
 
   entryDate.value = todayISO();
+  activeDateKey = entryDate.value;
   hydrateDate();
   bindEvents();
   updateUI();
@@ -110,7 +112,9 @@ async function bootstrap() {
 }
 
 function bindEvents() {
-  entryDate.addEventListener("change", () => {
+  entryDate.addEventListener("change", async () => {
+    await syncToState(activeDateKey);
+    activeDateKey = entryDate.value;
     hydrateDate();
     updateUI();
   });
@@ -154,6 +158,7 @@ function bindEvents() {
     state.challengeStart = startDate;
     state.days = { [startDate]: structuredClone(defaultData) };
     entryDate.value = startDate;
+    activeDateKey = startDate;
     closeMenu();
     void persistState();
     hydrateDate();
@@ -228,7 +233,7 @@ function hydrateDate() {
   weightKgInput.value = day.weightKg === null ? "" : day.weightKg.toFixed(1);
 }
 
-async function syncToState() {
+async function syncToState(dateKey = entryDate.value) {
   const day = structuredClone(defaultData);
 
   trackerDefs.forEach((def) => {
@@ -250,7 +255,7 @@ async function syncToState() {
     weightKgInput.value = day.weightKg.toFixed(1);
   }
 
-  state.days[entryDate.value] = day;
+  state.days[dateKey] = day;
   await persistState();
 }
 
