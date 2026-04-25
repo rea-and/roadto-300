@@ -191,6 +191,11 @@ function bindEvents() {
     updateUI();
   });
 
+  weightKgInput.addEventListener("blur", () => {
+    const parsed = parseWeightKg(weightKgInput.value);
+    weightKgInput.value = parsed === null ? "" : parsed.toFixed(1);
+  });
+
   window.addEventListener("beforeunload", () => {
     void persistState();
   });
@@ -252,9 +257,6 @@ async function syncToState(dateKey = entryDate.value) {
   });
 
   day.weightKg = parseWeightKg(weightKgInput.value);
-  if (day.weightKg !== null) {
-    weightKgInput.value = day.weightKg.toFixed(1);
-  }
 
   state.days[dateKey] = day;
   await persistState();
